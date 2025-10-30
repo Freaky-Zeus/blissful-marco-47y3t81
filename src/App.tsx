@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 // Assuming FlowchartNode and Arrow are in a components folder
 // You might need to adjust this path if they are in the same file.
 // import { FlowchartNode } from "./components/FlowchartNode";
@@ -14,8 +14,39 @@ import {
   Loader2,
 } from "lucide-react";
 
+// --- Prop Type Interfaces ---
+
+interface ModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  title: string;
+  content: string;
+}
+
+interface FlowchartNodeProps {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  label: string;
+  shape: string;
+  color: string;
+  onClick?: () => void; // Optional prop
+  isClickable?: boolean; // Optional prop
+  isLoading?: boolean; // Optional prop
+}
+
+interface ArrowProps {
+  x1: number;
+  y1: number;
+  x2: number;
+  y2: number;
+  dashed?: boolean; // Optional prop
+  curved?: boolean; // Optional prop
+}
+
 // --- Modal Component ---
-const Modal = ({ isOpen, onClose, title, content }) => {
+const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, content }) => {
   if (!isOpen) return null;
 
   return (
@@ -41,8 +72,7 @@ const Modal = ({ isOpen, onClose, title, content }) => {
 };
 
 // --- FlowchartNode Component ---
-// Added onClick and isClickable props
-const FlowchartNode = ({
+const FlowchartNode: React.FC<FlowchartNodeProps> = ({
   x,
   y,
   width,
@@ -143,7 +173,7 @@ const FlowchartNode = ({
         fill="#1F2937" // Dark text for readability
         style={{ fontSize: "14px", fontWeight: 500, pointerEvents: "none" }}
       >
-        {textLines.map((line, index) => (
+        {textLines.map((line: string, index: number) => (
           <tspan key={index} x={x + width / 2} dy={index === 0 ? 0 : lineHeight}>
             {line}
           </tspan>
@@ -164,8 +194,14 @@ const FlowchartNode = ({
 };
 
 // --- Arrow Component ---
-// (No changes from your last version)
-const Arrow = ({ x1, y1, x2, y2, dashed = false, curved = false }) => {
+const Arrow: React.FC<ArrowProps> = ({
+  x1,
+  y1,
+  x2,
+  y2,
+  dashed = false,
+  curved = false,
+}) => {
   const markerId = dashed ? "arrowhead-dashed" : "arrowhead-solid";
   const strokeColor = dashed ? "#6B7280" : "#374151";
   const strokeDasharray = dashed ? "5, 5" : "none";
@@ -218,14 +254,14 @@ export default function App() {
   };
 
   // --- State for Gemini Integration ---
-  const [aiResults, setAiResults] = useState(null);
-  const [draftReport, setDraftReport] = useState(null);
+  const [aiResults, setAiResults] = useState<string | null>(null);
+  const [draftReport, setDraftReport] = useState<string | null>(null);
   const [isLoadingReport, setIsLoadingReport] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalContent, setModalContent] = useState({ title: "", content: "" });
 
   // --- Modal Functions ---
-  const openModal = (title, content) => {
+  const openModal = (title: string, content: string | null) => {
     if (!content) return;
     setModalContent({ title, content });
     setIsModalOpen(true);
@@ -233,7 +269,7 @@ export default function App() {
   const closeModal = () => setIsModalOpen(false);
 
   // --- Gemini API Call Helper ---
-  const generateDraftReport = async (aiResultsJson) => {
+  const generateDraftReport = async (aiResultsJson: string) => {
     const apiKey = ""; // Leave as-is
     const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
 
@@ -452,7 +488,7 @@ export default function App() {
 
               {/* Arrows within Layer 1 */}
               <Arrow x1={160} y1={200} x2={160} y2={240} />
-              
+
               {/* New arrow: Study Ingest to MinIO Object Storage */}
               <Arrow x1={160} y1={310} x2={160} y2={350} />
 
@@ -464,16 +500,6 @@ export default function App() {
                 fill="none"
                 markerEnd="url(#arrowhead-solid)"
               />
-              
-              {/* Removed:
-              <path d="M160 310 L 160 330 L 100 330 L 100 470" stroke="#374151" strokeWidth="2" fill="none" />
-              <Arrow x1={100} y1={470} x2={100} y2={470} /> 
-              <path d="M160 310 L 160 330 L 220 330 L 220 350" stroke="#374151" strokeWidth="2" fill="none" />
-              <Arrow x1={220} y1={350} x2={220} y2={350} />
-              <Arrow x1={160} y1={310} x2={160} y2={350} />
-              <Arrow x1={160} y1={310} x2={160} y2={470} /> 
-              */}
-
 
               {/* Layer 2: Workflow & Event Processing (Light Blue) */}
               <g>
@@ -596,7 +622,9 @@ export default function App() {
                   }
                   shape="rectangle"
                   color={colors.green}
-                  onClick={() => openModal("Gemini-Generated Report", draftReport)}
+                  onClick={() =>
+                    openModal("Gemini-Generated Report", draftReport)
+                  }
                   isClickable={!!draftReport}
                 />
 
@@ -619,10 +647,11 @@ export default function App() {
               <Arrow x1={590} y1={410} x2={690} y2={185} />
 
               {/* Arrows within Layer 3 */}
-              <Arrow x1={830} y1={185} x2={880} y2={190} />
-              <Arrow x1={760} y1={220} x2={760} y2={280} />
-              <Arrow x1={950} y1={230} x2={950} y2={280} />
-              <Arrow x1={830} y1={315} x2={880} y2={320} />
+              <Arrow x1={850} y1={190} x2={880} y2={190} /> {/* Adjusted start x */ }
+              <Arrow x1={770} y1={230} x2={760} y2={280} /> {/* Adjusted start x */ }
+              <Arrow x1={960} y1={230} x2={960} y2={280} /> {/* Adjusted x */ }
+              <Arrow x1={850} y1={325} x2={880} y2={325} /> {/* Adjusted start x and y */ }
+
 
               {/* ... Other layers (4, 5, 6) ... */}
               {/* Layer 4: Clinical Interface (Purple) */}
@@ -695,14 +724,14 @@ export default function App() {
               </g>
 
               {/* Arrows from Layer 3 to Layer 4 */}
-              <Arrow x1={1020} y1={320} x2={1110} y2={175} />
-              <Arrow x1={1020} y1={190} x2={1290} y2={175} />
+              <Arrow x1={1040} y1={325} x2={1110} y2={185} /> {/* Adjusted start x */ }
+              <Arrow x1={1020} y1={190} x2={1290} y2={185} /> {/* Adjusted end y */ }
 
               {/* Arrows within Layer 4 */}
-              <Arrow x1={1250} y1={175} x2={1290} y2={175} />
-              <Arrow x1={1180} y1={210} x2={1180} y2={270} />
-              <Arrow x1={1365} y1={210} x2={1365} y2={270} />
-              <Arrow x1={1250} y1={310} x2={1290} y2={310} />
+              <Arrow x1={1270} y1={185} x2={1290} y2={185} /> {/* Adjusted start x */ }
+              <Arrow x1={1190} y1={230} x2={1190} y2={270} /> {/* Adjusted x */ }
+              <Arrow x1={1370} y1={230} x2={1370} y2={270} /> {/* Adjusted x */ }
+              <Arrow x1={1270} y1={315} x2={1290} y2={315} /> {/* Adjusted start x and y */ }
 
               {/* Layer 5: EHR Integration (Teal) */}
               <g>
@@ -774,7 +803,7 @@ export default function App() {
               </g>
 
               {/* Arrows from Layer 4 to Layer 5 */}
-              <Arrow x1={1440} y1={310} x2={1530} y2={180} />
+              <Arrow x1={1450} y1={315} x2={1530} y2={180} /> {/* Adjusted start x and y */ }
 
               {/* Arrows within Layer 5 */}
               <Arrow x1={1670} y1={220} x2={1670} y2={270} />
@@ -842,7 +871,7 @@ export default function App() {
               </g>
 
               {/* Dashed feedback arrow from Clinical to Feedback layer */}
-              <Arrow x1={1180} y1={350} x2={755} y2={600} dashed={true} />
+              <Arrow x1={1190} y1={360} x2={755} y2={600} dashed={true} /> {/* Adjusted start x and y */ }
 
               {/* Arrows within Layer 6 */}
               <Arrow x1={820} y1={630} x2={860} y2={630} />
@@ -852,8 +881,8 @@ export default function App() {
               <Arrow
                 x1={1095}
                 y1={600}
-                x2={760}
-                y2={220}
+                x2={770} // Adjusted end x
+                y2={230} // Adjusted end y
                 dashed={true}
                 curved={true}
               />
@@ -890,4 +919,3 @@ export default function App() {
     </>
   );
 }
-
